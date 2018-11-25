@@ -30,6 +30,7 @@ tasks.withType(JavaCompile) {
 
 ext {
     helidonversion = '0.10.5'
+    artifactId = project.name
 }
 
 repositories {
@@ -53,8 +54,17 @@ task copyLibs(type: Copy) {
   into 'build/libs/libs'
 }
 
-// add it as a dependency of built-in task 'assemble'
+// define a custom task to copy Dockerfile into build/libs
+task copyDockerfile(type: Copy) {
+    from 'src/main/docker/Dockerfile'
+    into "${buildDir}/libs"
+    expand(project.properties)
+}
+
+// add them as dependencies of built-in task 'assemble'
+copyDockerfile.dependsOn jar
 copyLibs.dependsOn jar
+assemble.dependsOn copyDockerfile
 assemble.dependsOn copyLibs
 
 // default jar configuration
